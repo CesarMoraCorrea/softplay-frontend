@@ -179,7 +179,7 @@ export default function Home() {
       {/* Hero + Buscador */}
       <section className="py-10 bg-gray-50 border-b">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h1 className="text-3xl font-bold mb-2">Encuentra tu cancha perfecta</h1>
+          <h1 className="text-3xl font-bold mb-2">  perfecta</h1>
           <p className="text-gray-600 mb-6">
             Más de {fields.length} canchas disponibles cerca de ti
           </p>

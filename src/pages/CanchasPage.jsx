@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { Search, Filter, MapPin, Star, X, ArrowLeft } from 'lucide-react';
+import { Search, Filter, MapPin, Star, X, ArrowLeft, Map, List } from 'lucide-react';
 import MainLayout from '../layouts/MainLayout';
 import CanchaCard from '../features/canchas/components/CanchaCard';
 import FiltrosCanchas from '../features/canchas/components/FiltrosCanchas';
@@ -9,6 +9,7 @@ import Input from '../components/common/Input';
 import Button from '../components/common/Button';
 import Alert from '../components/common/Alert';
 import GeolocationSearch from '../components/GeolocationSearch';
+import GoogleMapsView from '../components/GoogleMapsView';
 
 // Importamos la acción para obtener canchas del backend
 import { fetchCanchas } from '../redux/slices/canchasSlice';
@@ -21,6 +22,7 @@ const CanchasPage = () => {
   const [error, setError] = useState(null);
   const [filtrosAbiertos, setFiltrosAbiertos] = useState(false);
   const [busqueda, setBusqueda] = useState('');
+  const [vistaActual, setVistaActual] = useState('mapa'); // 'lista' o 'mapa' - por defecto mapa
   const [filtros, setFiltros] = useState({
     ubicacion: '',
     precioMin: 0,
@@ -148,6 +150,32 @@ const CanchasPage = () => {
               >
                 Filtros
               </Button>
+              
+              {/* Toggle para cambiar entre vista lista y mapa */}
+              <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                <button
+                  onClick={() => setVistaActual('mapa')}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    vistaActual === 'mapa'
+                      ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+                      : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                  }`}
+                >
+                  <Map className="w-4 h-4" />
+                  Mapa
+                </button>
+                <button
+                  onClick={() => setVistaActual('lista')}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    vistaActual === 'lista'
+                      ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+                      : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                  }`}
+                >
+                  <List className="w-4 h-4" />
+                  Lista
+                </button>
+              </div>
             </div>
             
             {/* Componente de geolocalización */}
@@ -229,20 +257,31 @@ const CanchasPage = () => {
             ))}
           </div>
         ) : canchasFiltradas.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {canchasFiltradas.map(cancha => (
-              <CanchaCard 
-                key={cancha._id}
-                cancha={{
-                  ...cancha,
-                  precio: cancha.precioHora, // Mapear precioHora a precio para compatibilidad
-                  horariosDisponibles: cancha.horarios || [] // Asegurar que siempre haya un array de horarios
-                }}
-                isFavorite={false} // En una implementación real, esto vendría del estado
-                onToggleFavorite={() => toggleFavorito(cancha._id)}
-              />
-            ))}
-          </div>
+          vistaActual === 'mapa' ? (
+            <GoogleMapsView 
+              canchas={canchasFiltradas}
+              userLocation={filtros.coordenadas}
+              onCanchaSelect={(cancha) => {
+                console.log('Cancha seleccionada:', cancha);
+                // Aquí podrías abrir un modal o navegar a la página de detalles
+              }}
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {canchasFiltradas.map(cancha => (
+                <CanchaCard 
+                  key={cancha._id}
+                  cancha={{
+                    ...cancha,
+                    precio: cancha.precioHora, // Mapear precioHora a precio para compatibilidad
+                    horariosDisponibles: cancha.horarios || [] // Asegurar que siempre haya un array de horarios
+                  }}
+                  isFavorite={false} // En una implementación real, esto vendría del estado
+                  onToggleFavorite={() => toggleFavorito(cancha._id)}
+                />
+              ))}
+            </div>
+          )
         ) : (
           <div className="text-center py-12">
             <div className="mx-auto h-24 w-24 text-gray-400">
